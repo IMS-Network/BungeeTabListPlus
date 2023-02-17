@@ -393,19 +393,20 @@ public class BungeeTabListPlus {
     private void extractDefaultIcons(File headsFolder) {
         if (!headsFolder.exists()) {
             headsFolder.mkdirs();
-
+    
             try {
                 // copy default heads
                 ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(plugin.getFile()));
-
+    
                 ZipEntry entry;
                 while ((entry = zipInputStream.getNextEntry()) != null) {
                     if (!entry.isDirectory() && entry.getName().startsWith("heads/")) {
                         try {
-                            File targetFile = new File(plugin.getDataFolder(), entry.getName());
-                            targetFile.getParentFile().mkdirs();
-                            if (!targetFile.exists()) {
-                                Files.copy(zipInputStream, targetFile.toPath());
+                            Path targetPath = Paths.get(headsFolder.getAbsolutePath(), entry.getName());
+                            targetPath.toFile().getParentFile().mkdirs();
+                            if (!targetPath.toFile().exists()) {
+                                // fix https://cwe.mitre.org/data/definitions/23.html
+                                Files.copy(zipInputStream, targetPath);
                                 getLogger().info("Extracted " + entry.getName());
                             }
                         } catch (IOException ex) {
@@ -413,13 +414,13 @@ public class BungeeTabListPlus {
                         }
                     }
                 }
-
+    
                 zipInputStream.close();
             } catch (IOException ex) {
                 getLogger().log(Level.SEVERE, "Error extracting files", ex);
             }
         }
-    }
+    }    
 
     private boolean readMainConfig() {
         try {
